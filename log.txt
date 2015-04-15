@@ -1,0 +1,9 @@
+4/14/15
+Created user on Jetson with sudo using adduser and changin viduso file
+Installed OpenCV 2.4.11 from homepage
+Tested OpenCV (not sure if should have installed CVforTegra)
+Wrote a basic cpp program to read an image..SUCCESS (image file name case sensitive)
+Built a build.sh and used "chmod 777" to make it an executable to compile the cpp file
+
+4/15/15
+Built a program to capture the red ball from original image
