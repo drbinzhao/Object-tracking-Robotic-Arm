@@ -1,6 +1,7 @@
 #include <iostream>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include "opencv2/gpu/gpu.hpp"
 
 using namespace cv;
 using namespace std;
@@ -26,10 +27,18 @@ int main(){
             return -1;
         }
 
+        //using GPU for image processing
+        gpu::GpuMat d_src(src);
+        gpu::GpuMat d_dst;
+
+        //copy result back to host
+        Mat dst(d_dst);
         
         //display the original image and the gpu image
         namedWindow("CPU", CV_WINDOW_AUTOSIZE);
         imshow("CPU", src);
+//        namedWindow("GPU", CV_WINDOW_AUTOSIZE);
+//        imshow("GPU", dst);
 
         //wait for space key to exit
         if ((waitKey(1) & 0xFF) == ' '){

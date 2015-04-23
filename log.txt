@@ -7,3 +7,19 @@ Built a build.sh and used "chmod 777" to make it an executable to compile the cp
 
 4/15/15
 Built a program to capture the red ball from original image
+
+4/22/15 
+Working on this project again after a busy week..
+Working on getting the webcam to capture live image..
+Built a simple python program to test webcam
+"can't find cv" error
+Installed libraries for python-openCV
+python file runs
+CPP files won't compile now because they can't find the libraries..
+Re-installing openCV, using OpenCV-for-Tegra this time
+CPP files compile and run correctly
+Errors with python "can't find cv" 
+Guess the libraries over lap and can only choose one
+Added -lopencv_gpu library to the shell to fix a gpu error
+
+
