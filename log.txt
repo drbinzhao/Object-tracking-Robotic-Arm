@@ -29,3 +29,6 @@ Completely uninstalled opencv for a clean install
 Libraries kill or delete each other, what a shame
 Spent time figuring out why control bars wouldn't work
 Accidentaly renamed a parameter and forgot to rename the other parts in the program, shame on me
+Calculated the moment of pixels and identified the center
+Drew a line to track the center 
+Good progress
