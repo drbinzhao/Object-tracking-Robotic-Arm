@@ -32,3 +32,11 @@ Accidentaly renamed a parameter and forgot to rename the other parts in the prog
 Calculated the moment of pixels and identified the center
 Drew a line to track the center 
 Good progress
+
+4/24/15
+Today's goal is to print out x and y coordinate
+Online it says countNonZero is to count black pixels
+Howverm, I just checked and it counts white pixels, 
+which makes sense because black = 0 and white = 1
+Turns out I already got the coordinate
+Moving on to using GPU and socket
