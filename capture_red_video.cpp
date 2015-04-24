@@ -25,6 +25,7 @@ int main(){
 
     //get total pixel counts
     int nPixels = test.total();
+    cout<<"Total pixel count is: "<<nPixels<<endl;
 
     //initialize as a black image for later use when drawing lines
     Mat img_line = Mat::zeros(test.size(), CV_8UC3);
@@ -102,9 +103,9 @@ int main(){
         double M_y = moment.m10;
         double total_area = moment.m00;
     
-        //only track when object size is at least 1/100 of the frame size
+        //only track when object size is at least 1/1000 of the frame size
         //reduce possible noise interference
-        if (total_area > nPixels/100){
+        if (total_area > nPixels/1000){
 
         int newX = M_x/total_area;
         int newY = M_y/total_area;
@@ -134,6 +135,7 @@ int main(){
         }
     }
     
+
     cam.release();
     destroyAllWindows();
     waitKey(0);
