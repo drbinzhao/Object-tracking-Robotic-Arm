@@ -110,6 +110,10 @@ int main(){
         int newX = M_x/total_area;
         int newY = M_y/total_area;
 
+        //print coordinate
+        cout<<"X = "<<newX<<endl;
+        cout<<"Y = "<<newY<<endl;
+
         //draw a line if object found within range
         if (lastX >= 0 && lastY >= 0 && newX >= 0 && newY >= 0){
             line(img_line, Point(newX, newY), Point(lastX, lastY), Scalar(0,0,255),4);
