@@ -40,3 +40,9 @@ Howverm, I just checked and it counts white pixels,
 which makes sense because black = 0 and white = 1
 Turns out I already got the coordinate
 Moving on to using GPU and socket
+
+4/27/15
+Able to use GPU for HSV conversion
+Couldn't find matching gpu multi-channel thresholding function
+to port "inrage()" to gpu
+Implementing socket before coming back to threshold
