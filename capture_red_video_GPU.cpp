@@ -1,9 +1,13 @@
 #include <iostream>
+#include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/gpu/gpu.hpp>
+#include <ctime>
 
 using namespace cv;
 using namespace std;
+using namespace gpu;
 
 int main(){
     
@@ -58,27 +62,39 @@ int main(){
 
     //get the live video frame by frame
     while(1){
-        
-        Mat img;
+ 
+        //source image from host
+        Mat h_src;
         
         //check if captured correctly while reading a new frame from video
-        if (!cam.read(img)){
+        if (!cam.read(h_src)){
             cout<<"Error: Failed to read image"<<endl;
             break;
         }
+        
+        //start timer
+        clock_t begin = clock();
 
-        //convert from BGR to HSV
-        Mat img_hsv;
-        cvtColor(img, img_hsv, COLOR_BGR2HSV);
-/*  
-        //display the hsv image 
-        namedWindow("HSV", CV_WINDOW_AUTOSIZE);
-        imshow("HSV", img_hsv);
-*/        
+        //transfer host image to device
+        GpuMat d_src, d_dst;
+        d_src.upload(h_src);
+
+        //convert from BGR to HSV on GPU
+        GpuMat d_hsv;
+        cvtColor(d_src, d_hsv, COLOR_BGR2HSV);
+
+        //transfer image back to host
+        Mat img_hsv(d_hsv);
+        
+        //end timer
+        clock_t end = clock();
+        double elapsed_secs = double(end-begin)/CLOCKS_PER_SEC;
+        cout<<elapsed_secs<<" secs"<<endl;
+
         //threshold the image
         Mat img_th;
         inRange(img_hsv, Scalar(lowH, lowS, lowV), Scalar(highH, highS, highV), img_th);
-        
+
         //Morphological operations
         //opening
         //remove small objects(black) from the foreground
@@ -109,11 +125,11 @@ int main(){
 
         int newX = M_x/total_area;
         int newY = M_y/total_area;
-
+/*
         //print coordinate
         cout<<"X = "<<newX<<endl;
         cout<<"Y = "<<newY<<endl;
-
+*/
         //draw a line if object found within range
         if (lastX >= 0 && lastY >= 0 && newX >= 0 && newY >= 0){
             line(img_line, Point(newX, newY), Point(lastX, lastY), Scalar(0,0,255),4);
@@ -129,16 +145,15 @@ int main(){
         imshow("THRESHOLDED", img_th);
     
         //display the original image
-        img = img + img_line;
+        h_src = h_src + img_line;
         namedWindow("Original", CV_WINDOW_AUTOSIZE);
-        imshow("Original", img);
+        imshow("Original", h_src);
 
         //enter space key to exit
         if ((waitKey(1) & 0xFF) == ' '){
             break;
         }
     }
-    
 
     cam.release();
     destroyAllWindows();

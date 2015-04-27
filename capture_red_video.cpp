@@ -1,6 +1,7 @@
 #include <iostream>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <ctime>
 
 using namespace cv;
 using namespace std;
@@ -67,9 +68,17 @@ int main(){
             break;
         }
 
+        //start timer
+        clock_t begin = clock();
+
         //convert from BGR to HSV
         Mat img_hsv;
         cvtColor(img, img_hsv, COLOR_BGR2HSV);
+
+        //end timer
+        clock_t end = clock();
+        double elapsed_secs = double(end-begin)/CLOCKS_PER_SEC;
+        cout<<elapsed_secs<<" secs"<<endl;
 /*  
         //display the hsv image 
         namedWindow("HSV", CV_WINDOW_AUTOSIZE);
@@ -109,11 +118,11 @@ int main(){
 
         int newX = M_x/total_area;
         int newY = M_y/total_area;
-
+/*
         //print coordinate
         cout<<"X = "<<newX<<endl;
         cout<<"Y = "<<newY<<endl;
-
+*/
         //draw a line if object found within range
         if (lastX >= 0 && lastY >= 0 && newX >= 0 && newY >= 0){
             line(img_line, Point(newX, newY), Point(lastX, lastY), Scalar(0,0,255),4);
