@@ -46,3 +46,12 @@ Able to use GPU for HSV conversion
 Couldn't find matching gpu multi-channel thresholding function
 to port "inrage()" to gpu
 Implementing socket before coming back to threshold
+
+4/29/15
+Socket program tested
+Implementing socket into my main program
+
+4/30/15
+Finishing up socket
+Going to convert several functions to GPU ones
+Maybe implementing rt_task

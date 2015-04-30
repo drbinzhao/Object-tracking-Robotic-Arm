@@ -4,15 +4,85 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/gpu/gpu.hpp>
 #include <ctime>
-
 using namespace cv;
 using namespace std;
 using namespace gpu;
 
-int main(){
+//libraries for the socket
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+
+#define MSG_SIZE 40
+
+void error(const char *);
+
+int sockfd, n;
+unsigned len;
+struct hostent *hp;
+char buffer[MSG_SIZE];
+
+//create client, server structure
+struct sockaddr_in serv_addr, cli_addr;
+socklen_t ser_len, cli_len;
+
+//function to send coordinates to the socket
+int send_socket(char* buffer){
+    
+    //clear the buffer
+    bzero(buffer, MSG_SIZE);
+
+    //send message to server
+    n = sendto(sockfd, buffer, sizeof(buffer), 0, (const struct sockaddr *)&serv_addr, len);
+    if (n < 0){ 
+        cout<<"Error sending the coordinates."<<endl;
+        return -1;
+    }
+}
+
+int main(int argc, char *argv[]){
     
     int lowH, highH, lowS, highS, lowV, highV;
     int lastX, lastY;
+
+
+    /*--------------socket---------------*/
+
+    //check if user specify the host and port number
+    if (argc != 3){
+        cout<<"Please specify the host name and port for "<<argv[0]<<endl;
+        return -1;
+    }
+
+    //open a connectionless UDP socket
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockfd < 0){
+        cout<<"Error on opening socket."<<endl;
+        return -1;
+    }
+
+    //set internet domain
+    serv_addr.sin_family = AF_INET;
+    //converts hostname to ip address
+    hp = gethostbyname(argv[1]);
+    if (hp == 0){ 
+        cout<<"Unknown host"<<endl;
+        return -1;
+    }
+
+    //copy host ip into server ip address
+    bcopy((char *)hp->h_addr, (char *)&serv_addr.sin_addr, hp->h_length);
+    //set the port
+    serv_addr.sin_port = htons(atoi(argv[2]));
+    len = sizeof(struct sockaddr_in);
+
+    /*-------------object capturing-------------*/
 
     //open the camera
     VideoCapture cam(0);
@@ -60,6 +130,9 @@ int main(){
     cvCreateTrackbar("LowV", "Track Bars", &lowV, 255);
     cvCreateTrackbar("HighV", "Track Bars", &highV, 255);
 
+    //setting GPU
+    setDevice(0);
+
     //get the live video frame by frame
     while(1){
  
@@ -92,10 +165,12 @@ int main(){
         cout<<elapsed_secs<<" secs"<<endl;
 
         //threshold the image
+        //------see if can call gpu::threshold twice TODO
         Mat img_th;
         inRange(img_hsv, Scalar(lowH, lowS, lowV), Scalar(highH, highS, highV), img_th);
 
         //Morphological operations
+        //-------changed to use GPU--------TODO
         //opening
         //remove small objects(black) from the foreground
         erode(img_th, img_th, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
@@ -130,6 +205,12 @@ int main(){
         cout<<"X = "<<newX<<endl;
         cout<<"Y = "<<newY<<endl;
 */
+        //send target to the socket
+        sprintf(buffer, "x: %d y: %d", newX, newY);
+
+        //make real-time? TODO
+        send_socket(buffer);
+        
         //draw a line if object found within range
         if (lastX >= 0 && lastY >= 0 && newX >= 0 && newY >= 0){
             line(img_line, Point(newX, newY), Point(lastX, lastY), Scalar(0,0,255),4);
