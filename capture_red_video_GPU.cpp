@@ -8,7 +8,7 @@ using namespace cv;
 using namespace std;
 using namespace gpu;
 
-//libraries for the socket
+//libraries for the socket and some C functions
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -35,11 +35,8 @@ socklen_t ser_len, cli_len;
 //function to send coordinates to the socket
 int send_socket(char* buffer){
     
-    //clear the buffer
-    bzero(buffer, MSG_SIZE);
-
     //send message to server
-    n = sendto(sockfd, buffer, sizeof(buffer), 0, (const struct sockaddr *)&serv_addr, len);
+    n = sendto(sockfd, buffer, MSG_SIZE, 0, (const struct sockaddr *)&serv_addr, len);
     if (n < 0){ 
         cout<<"Error sending the coordinates."<<endl;
         return -1;
@@ -205,10 +202,11 @@ int main(int argc, char *argv[]){
         cout<<"X = "<<newX<<endl;
         cout<<"Y = "<<newY<<endl;
 */
+        //clear the buffer
+        bzero(buffer, MSG_SIZE);
+
         //send target to the socket
         sprintf(buffer, "x: %d y: %d", newX, newY);
-
-        //make real-time? TODO
         send_socket(buffer);
         
         //draw a line if object found within range

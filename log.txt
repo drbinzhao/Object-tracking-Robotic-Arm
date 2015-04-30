@@ -55,3 +55,6 @@ Implementing socket into my main program
 Finishing up socket
 Going to convert several functions to GPU ones
 Maybe implementing rt_task
+Can't implement rt_task because of the hardware architecture on Jetson
+Socket finished 
+Converting gpu morph functions
