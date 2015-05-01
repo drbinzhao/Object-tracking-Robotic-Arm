@@ -159,7 +159,7 @@ int main(int argc, char *argv[]){
 */
 
         //convert from BGR to HSV on GPU
-        cvtColor(h_src, h_hsv, COLOR_BGR2HSV);
+        cvtColor(d_src, d_hsv, COLOR_BGR2HSV);
 
 /*        
         //end timer
@@ -168,7 +168,7 @@ int main(int argc, char *argv[]){
         cout<<elapsed_secs<<" secs"<<endl;
 */
         //transfer image back to host
-        Mat h_hsv(d_hsv);
+        //Mat h_hsv(d_hsv);
 
 /*        
         //end timer
@@ -178,18 +178,38 @@ int main(int argc, char *argv[]){
 */
         //threshold the image
         //------see if can call gpu::threshold twice TODO
+        //split hsv image into three channels to use one channel threshold function on GPU
+        //GPU doesn't support inRange() function
+        vector<GpuMat> hsv_split;
+        split(d_hsv, hsv_split);
+
+        GpuMat d_h, d_s, d_v, temp, d_th;
+
+        //conduct thresholding for each plane on GPU
+        threshold(hsv_split[0], d_h, lowH, highH, THRESH_BINARY);
+        threshold(hsv_split[1], d_s, lowS, highS, THRESH_BINARY);
+        threshold(hsv_split[2], d_v, lowV, highV, THRESH_BINARY);
+    
+        //add each plane back together
+        bitwise_and(d_h, d_s, temp);
+        bitwise_and(d_v, temp, d_th);
+
+
+/*
+        //CPU code for thresholding
         Mat h_th;
         inRange(h_hsv, Scalar(lowH, lowS, lowV), Scalar(highH, highS, highV), h_th);
+*/
 
         //conduct morphological operations on the GPU
-        GpuMat d_morph;
+        GpuMat d_morph = d_th;
         GpuMat p1, p2, p3;
 /*
         //test morph performance on GPU
         //start timer
         clock_t begin = clock();
 */
-        d_morph.upload(h_th);
+        //d_morph.upload(h_th);
 
         //Morphological operations, GPU doesn't support in-place morph operations
         //opening
