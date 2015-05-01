@@ -48,10 +48,9 @@ int main(int argc, char *argv[]){
     int lowH, highH, lowS, highS, lowV, highV;
     int lastX, lastY;
 
-
     /*--------------socket---------------*/
 
-    //check if user specify the host and port number
+    //check if user specify the server's ip address and a port number
     if (argc != 3){
         cout<<"Please specify the host name and port for "<<argv[0]<<endl;
         return -1;
@@ -141,42 +140,96 @@ int main(int argc, char *argv[]){
             cout<<"Error: Failed to read image"<<endl;
             break;
         }
-        
+
+/*
+        //test rgb to hsv conversion on GPU  
         //start timer
         clock_t begin = clock();
+*/
 
         //transfer host image to device
-        GpuMat d_src, d_dst;
+        GpuMat d_src;
         d_src.upload(h_src);
+        GpuMat d_hsv;
+
+/*        
+        //test rgb to hsv conversion on CPU
+        //start timer
+        clock_t begin = clock();
+*/
 
         //convert from BGR to HSV on GPU
-        GpuMat d_hsv;
-        cvtColor(d_src, d_hsv, COLOR_BGR2HSV);
+        cvtColor(h_src, h_hsv, COLOR_BGR2HSV);
 
-        //transfer image back to host
-        Mat img_hsv(d_hsv);
-        
+/*        
         //end timer
         clock_t end = clock();
         double elapsed_secs = double(end-begin)/CLOCKS_PER_SEC;
         cout<<elapsed_secs<<" secs"<<endl;
+*/
+        //transfer image back to host
+        Mat h_hsv(d_hsv);
 
+/*        
+        //end timer
+        clock_t end = clock();
+        double elapsed_secs = double(end-begin)/CLOCKS_PER_SEC;
+        cout<<elapsed_secs<<" secs"<<endl;
+*/
         //threshold the image
         //------see if can call gpu::threshold twice TODO
-        Mat img_th;
-        inRange(img_hsv, Scalar(lowH, lowS, lowV), Scalar(highH, highS, highV), img_th);
+        Mat h_th;
+        inRange(h_hsv, Scalar(lowH, lowS, lowV), Scalar(highH, highS, highV), h_th);
 
-        //Morphological operations
-        //-------changed to use GPU--------TODO
+        //conduct morphological operations on the GPU
+        GpuMat d_morph;
+        GpuMat p1, p2, p3;
+/*
+        //test morph performance on GPU
+        //start timer
+        clock_t begin = clock();
+*/
+        d_morph.upload(h_th);
+
+        //Morphological operations, GPU doesn't support in-place morph operations
         //opening
         //remove small objects(black) from the foreground
-        erode(img_th, img_th, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
-        dilate(img_th, img_th, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
+        erode(d_morph, p1, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
+        dilate(p1, p2, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
 
         //closing
         //remove small holes(white) from the foreground
-        dilate(img_th, img_th, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
-        erode(img_th, img_th, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
+        dilate(p2, p3, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
+        erode(p3, d_morph, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
+        
+        //copy back to host
+        Mat h_morph(d_morph);  
+/*        
+        //test morph performance on GPU
+        //end timer
+        clock_t end = clock();
+        double elapsed_secs = double(end-begin)/CLOCKS_PER_SEC;
+        cout<<elapsed_secs<<" secs"<<endl;
+*/
+        
+/*
+        //CPU code for morphological operations
+        //test morph performance on CPU
+        //start timer
+        clock_t begin = clock();
+
+        erode(h_morph, h_morph, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
+        dilate(h_morph, h_morph, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
+
+        dilate(h_morph, h_morph, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
+        erode(h_morph, h_morph, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
+        
+        //test morph performance on CPU
+        //end timer
+        clock_t end = clock();
+        double elapsed_secs = double(end-begin)/CLOCKS_PER_SEC;
+        cout<<elapsed_secs<<" secs"<<endl;
+*/
 
         //to get the center of the object, we calculate the moment
         //a moment is a specific quantitive measure
@@ -185,7 +238,7 @@ int main(int argc, char *argv[]){
         //the 2nd moment is the rotational inertia
 
         //calculate moments of the thresholded image
-        Moments moment = moments(img_th);
+        Moments moment = moments(h_morph);
 
         double M_x = moment.m01;
         double M_y = moment.m10;
@@ -220,8 +273,8 @@ int main(int argc, char *argv[]){
         }
 
         //display the thresholded image
-        namedWindow("THRESHOLDED", CV_WINDOW_AUTOSIZE);
-        imshow("THRESHOLDED", img_th);
+        namedWindow("Thresholded", CV_WINDOW_AUTOSIZE);
+        imshow("Thresholded", h_morph);
     
         //display the original image
         h_src = h_src + img_line;

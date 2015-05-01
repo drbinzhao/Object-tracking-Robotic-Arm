@@ -58,3 +58,6 @@ Maybe implementing rt_task
 Can't implement rt_task because of the hardware architecture on Jetson
 Socket finished 
 Converting gpu morph functions
+Morph GPU tested! 6x performance improvement!
+Now trying to convert thresholding function again
+Also need to change UDP to TCP to communicate with the other board
