@@ -63,3 +63,8 @@ Now trying to convert thresholding function again
 Also need to change UDP to TCP to communicate with the other board
 Completed porting threshold function to GPU! 
 Testing performance improvement tomorrow because I gotta go pick Jessica up
+
+5/4/15
+Finished testing
+Fixed x,y dimention error when calculating image moment
+Capturing demonstration

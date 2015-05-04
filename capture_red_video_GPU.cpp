@@ -1,3 +1,12 @@
+/*This program conducts object trakcing with red color on Jetson embedded board using the 192-core GPU*/
+/*Achieved x times speed up 
+ * Future improvement: Maybe calculate the moment on GPU as well, or see if we can manually manipulate threads like in CUDA C
+ * Assume results from GPU CPU are the same, assume using ssh doesn't disgrace the performance of kernels
+ *
+ * */
+
+
+
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -141,43 +150,18 @@ int main(int argc, char *argv[]){
             break;
         }
 
-/*
-        //test rgb to hsv conversion on GPU  
-        //start timer
+        
         clock_t begin = clock();
-*/
 
         //transfer host image to device
         GpuMat d_src;
         d_src.upload(h_src);
         GpuMat d_hsv;
 
-/*        
-        //test rgb to hsv conversion on CPU
-        //start timer
-        clock_t begin = clock();
-*/
-
         //convert from BGR to HSV on GPU
         cvtColor(d_src, d_hsv, COLOR_BGR2HSV);
 
-/*        
-        //end timer
-        clock_t end = clock();
-        double elapsed_secs = double(end-begin)/CLOCKS_PER_SEC;
-        cout<<elapsed_secs<<" secs"<<endl;
-*/
-        //transfer image back to host
-        //Mat h_hsv(d_hsv);
-
-/*        
-        //end timer
-        clock_t end = clock();
-        double elapsed_secs = double(end-begin)/CLOCKS_PER_SEC;
-        cout<<elapsed_secs<<" secs"<<endl;
-*/
         //threshold the image
-        //------see if can call gpu::threshold twice TODO
         //split hsv image into three channels to use one channel threshold function on GPU
         //GPU doesn't support inRange() function
         vector<GpuMat> hsv_split;
@@ -194,22 +178,9 @@ int main(int argc, char *argv[]){
         bitwise_and(d_h, d_s, temp);
         bitwise_and(d_v, temp, d_th);
 
-
-/*
-        //CPU code for thresholding
-        Mat h_th;
-        inRange(h_hsv, Scalar(lowH, lowS, lowV), Scalar(highH, highS, highV), h_th);
-*/
-
         //conduct morphological operations on the GPU
         GpuMat d_morph = d_th;
         GpuMat p1, p2, p3;
-/*
-        //test morph performance on GPU
-        //start timer
-        clock_t begin = clock();
-*/
-        //d_morph.upload(h_th);
 
         //Morphological operations, GPU doesn't support in-place morph operations
         //opening
@@ -222,34 +193,12 @@ int main(int argc, char *argv[]){
         dilate(p2, p3, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
         erode(p3, d_morph, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
         
-        //copy back to host
+        //copy final result back to host
         Mat h_morph(d_morph);  
-/*        
-        //test morph performance on GPU
-        //end timer
-        clock_t end = clock();
-        double elapsed_secs = double(end-begin)/CLOCKS_PER_SEC;
-        cout<<elapsed_secs<<" secs"<<endl;
-*/
         
-/*
-        //CPU code for morphological operations
-        //test morph performance on CPU
-        //start timer
-        clock_t begin = clock();
-
-        erode(h_morph, h_morph, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
-        dilate(h_morph, h_morph, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
-
-        dilate(h_morph, h_morph, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
-        erode(h_morph, h_morph, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
-        
-        //test morph performance on CPU
-        //end timer
-        clock_t end = clock();
-        double elapsed_secs = double(end-begin)/CLOCKS_PER_SEC;
-        cout<<elapsed_secs<<" secs"<<endl;
-*/
+        clock_t end = clock();    
+        double elapsed = double(end-begin)/CLOCKS_PER_SEC;
+        cout<<"Total time (convert + threshold + morph): "<<elapsed<<" secs"<<endl;
 
         //to get the center of the object, we calculate the moment
         //a moment is a specific quantitive measure
@@ -260,8 +209,8 @@ int main(int argc, char *argv[]){
         //calculate moments of the thresholded image
         Moments moment = moments(h_morph);
 
-        double M_x = moment.m01;
-        double M_y = moment.m10;
+        double M_x = moment.m10;
+        double M_y = moment.m01;
         double total_area = moment.m00;
     
         //only track when object size is at least 1/1000 of the frame size
@@ -270,11 +219,7 @@ int main(int argc, char *argv[]){
 
         int newX = M_x/total_area;
         int newY = M_y/total_area;
-/*
-        //print coordinate
-        cout<<"X = "<<newX<<endl;
-        cout<<"Y = "<<newY<<endl;
-*/
+        
         //clear the buffer
         bzero(buffer, MSG_SIZE);
 

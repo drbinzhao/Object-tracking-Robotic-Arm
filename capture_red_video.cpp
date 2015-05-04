@@ -75,15 +75,6 @@ int main(){
         Mat img_hsv;
         cvtColor(img, img_hsv, COLOR_BGR2HSV);
 
-        //end timer
-        clock_t end = clock();
-        double elapsed_secs = double(end-begin)/CLOCKS_PER_SEC;
-        cout<<elapsed_secs<<" secs"<<endl;
-/*  
-        //display the hsv image 
-        namedWindow("HSV", CV_WINDOW_AUTOSIZE);
-        imshow("HSV", img_hsv);
-*/        
         //threshold the image
         Mat img_th;
         inRange(img_hsv, Scalar(lowH, lowS, lowV), Scalar(highH, highS, highV), img_th);
@@ -99,6 +90,10 @@ int main(){
         dilate(img_th, img_th, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
         erode(img_th, img_th, getStructuringElement(MORPH_ELLIPSE, Size(5,5)));
 
+        clock_t end = clock();
+        double elapsed = double(end-begin)/CLOCKS_PER_SEC;
+        cout<<"Total time (convert + threshold + morph): "<<elapsed<<" secs"<<endl;
+        
         //to get the center of the object, we calculate the moment
         //a moment is a specific quantitive measure
         //the 0th moment is the total value, and the 1st moment divided 
@@ -108,8 +103,8 @@ int main(){
         //calculate moments of the thresholded image
         Moments moment = moments(img_th);
 
-        double M_x = moment.m01;
-        double M_y = moment.m10;
+        double M_x = moment.m10;
+        double M_y = moment.m01;
         double total_area = moment.m00;
     
         //only track when object size is at least 1/1000 of the frame size
@@ -118,11 +113,7 @@ int main(){
 
         int newX = M_x/total_area;
         int newY = M_y/total_area;
-/*
-        //print coordinate
-        cout<<"X = "<<newX<<endl;
-        cout<<"Y = "<<newY<<endl;
-*/
+        
         //draw a line if object found within range
         if (lastX >= 0 && lastY >= 0 && newX >= 0 && newY >= 0){
             line(img_line, Point(newX, newY), Point(lastX, lastY), Scalar(0,0,255),4);
@@ -148,7 +139,6 @@ int main(){
         }
     }
     
-
     cam.release();
     destroyAllWindows();
     waitKey(0);
