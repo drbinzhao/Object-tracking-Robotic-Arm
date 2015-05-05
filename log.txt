@@ -68,3 +68,7 @@ Testing performance improvement tomorrow because I gotta go pick Jessica up
 Finished testing
 Fixed x,y dimention error when calculating image moment
 Capturing demonstration
+
+5/5/15
+Making presentation and final report
+Next step: port 3D detection onto Jetson and send 3D target location to socket to control robotic arm
