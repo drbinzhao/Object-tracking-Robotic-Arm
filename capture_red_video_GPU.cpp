@@ -1,11 +1,6 @@
-/*This program conducts object trakcing with red color on Jetson embedded board using the 192-core GPU*/
-/*Achieved x times speed up 
- * Future improvement: Maybe calculate the moment on GPU as well, or see if we can manually manipulate threads like in CUDA C
- * Assume results from GPU CPU are the same, assume using ssh doesn't disgrace the performance of kernels
- *
- * */
 
-
+/*This program detects and tracks a red object on Nvidia's Jetson embedded board (Keplar GPU w/ 192 cores) with OpenCV*/
+/*Achieved 4x times total speed up with current implementation*/ 
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
