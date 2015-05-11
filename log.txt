@@ -72,3 +72,8 @@ Capturing demonstration
 5/5/15
 Making presentation and final report
 Next step: port 3D detection onto Jetson and send 3D target location to socket to control robotic arm
+Implement CUDA code with OpenCV!
+
+5/11/15
+Figured out how to manually access pixles and threshold the image by changing pixel values
+Now trying to apply it on GPU
