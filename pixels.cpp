@@ -7,6 +7,7 @@
 
 using namespace std;
 using namespace cv;
+using namespace gpu;
 
 int main(){
     
@@ -45,6 +46,8 @@ int main(){
     cout<<x<<endl;
     cout<<y<<endl;
     int i,j;
+ 
+    clock_t start = clock();
     
     //threshold hue
     for ( j = 0; j < y; j++)
@@ -52,14 +55,14 @@ int main(){
         for (i = 0; i < x; i++)
         {
             int a = hsv_split[0].at<uchar>(j,i);
-            if (a > lowH && a < highH)
+            if (a >= lowH && a <= highH)
             {
                 hsv_split[0].at<uchar>(j,i) = 255;
             }
             else hsv_split[0].at<uchar>(j,i) = 0;
         }
     }
-    
+
     //threshold saturation
     for ( j = 0; j < y; j++)
     {
@@ -93,6 +96,10 @@ int main(){
     Mat img_th;
     bitwise_and(hsv_split[0], hsv_split[1], temp);
     bitwise_and(hsv_split[2], temp, img_th);
+
+    clock_t end = clock();
+    double elapsed = double(end-start)/CLOCKS_PER_SEC;
+    cout<<"Total time: "<<elapsed<<" sec"<<endl;
 
     //show processed image
     imshow("Here you go!", img_th);
