@@ -47,7 +47,6 @@ int main(){
     int i,j;
  
     clock_t start = clock();
- 
     
     //threshold hue
     for ( j = 0; j < y; j++)
