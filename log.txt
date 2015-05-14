@@ -77,3 +77,11 @@ Implement CUDA code with OpenCV!
 5/11/15
 Figured out how to manually access pixles and threshold the image by changing pixel values
 Now trying to apply it on GPU
+
+5/13/15
+Can't figure out how to combine CUDA C with OpenCV 
+Running out of time so converting UDP to TCP/IP now
+
+5/14/15
+Finished TCP/IP connection
+Done for this phase
