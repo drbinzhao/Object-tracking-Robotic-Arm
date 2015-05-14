@@ -25,7 +25,11 @@ using namespace gpu;
 
 #define MSG_SIZE 40
 
-void error(const char *);
+void error(const char *msg)
+{
+    perror(msg);
+    exit(0);
+}
 
 int sockfd, n;
 unsigned len;
